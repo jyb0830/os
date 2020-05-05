@@ -173,15 +173,15 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
 
 int lab2_node_remove(lab2_tree *tree, int key) {  
     lab2_node *c_node, *parent;
-    int rl=0;
-    if(tree == NULL){                                                //tree is invalid
+    int lr=0;
+    if(tree == NULL){                                                //트리가 NULL이면
         return -1;
     }
-    else if(tree->root == NULL){                                     //tree has no node
+    else if(tree->root == NULL){                                     //트리의 root가 NULL이면
         return -1;
     }
-    else if(tree->root->left == NULL && tree->root->right == NULL){ //tree has only one node
-        if(key == tree->root->key){
+    else if(tree->root->left == NULL && tree->root->right == NULL){ //트리가 하나의 노드만 있으면
+        if(key == tree->root->key){                                 //그 하나의 노드와 찾으려는 키 값이 같을 때
             c_node = tree->root;
             tree->root = NULL;
         }
@@ -189,43 +189,43 @@ int lab2_node_remove(lab2_tree *tree, int key) {
             return -1;
         }
     }
-    else{                                                           //tree has more than one node
+    else{                                                           //트리의 노드가 한 개보다 많을 때
         c_node = tree->root; parent = tree->root;
-        while(c_node != NULL){
+        while(c_node != NULL){                                      //삭제하려는 키 값의 위치를 찾기 위한 while문
             if(c_node->key == key)
                 break;
             else if(c_node->key > key){
                 parent = c_node;
                 c_node = c_node->left;
-                rl=0;
+                lr=0;
             }
             else{
                 parent = c_node;
                 c_node = c_node->right;
-                rl=1;
+                lr=1;
             }
         }
-        if(c_node == NULL){                                         //node has not been found
+        if(c_node == NULL){                                         //삭제하려는 키 값을 가진 노드를 찾이 못했을 때
             return -1;
         }
-        else if(c_node->left == NULL && c_node->right == NULL){   //c_node has no child
-            if(rl==0)
+        else if(c_node->left == NULL && c_node->right == NULL){     //삭제하려는 노드가 자식이 없을 때
+            if(lr==0)
                 parent->left = NULL;
             else
                 parent->right = NULL;
         }
-        else if(c_node->left != NULL && c_node->right !=NULL){    //c_node has 2 children
+        else if(c_node->left != NULL && c_node->right !=NULL){      //삭제하려는 노드가 두 개의 자식을 가질 때
              lab2_node *replace = c_node->left, *r_parent = c_node;
-             while(replace->right != NULL){                         //find biggest node in left sub-tree of c_node
+             while(replace->right != NULL){                         //삭제하려는 노드의 왼쪽노드 중 가장 큰 노드를 찾기 위한 while문
                  r_parent = replace;
                  replace = replace->right;
              }
-             if(replace == c_node->left){                               //replace node is left child
+             if(replace == c_node->left){                           //왼쪽 노드 중 가장 큰 노드가 replace노드인 경우
                  if(c_node == tree->root){
                     replace->right = c_node->right;
                     tree->root = replace;
                  }
-                 else if(rl==0){
+                 else if(lr==0){
                     replace->right = c_node->right;
                     parent->left = replace;
                  }
@@ -235,28 +235,28 @@ int lab2_node_remove(lab2_tree *tree, int key) {
 
                 }
              }
-             else{                                                  //replace node is not left child
+             else{                                                  //왼쪽 노드 중 가장 큰 노드가 replace 노드가 아닌 경우
                 r_parent->right = replace->left;
                 replace->left = c_node->left;
                 replace->right = c_node->right;
-                if(c_node == tree-> root){                         //c_node is root node
+                if(c_node == tree-> root){                         //삭제하려는 노드가 root 노드이면
                     tree->root = replace;
                 }
-                else if(rl==0)
+                else if(lr==0)
                     parent->left = replace;
                 else
                     parent->right = replace;
              }
         }
-        else{                                                       //c_node has 1 child
+        else{                                                       //삭제하려는 노드가 한 개의 자식을 갖는다면
             if(c_node == tree->root){
-                 if(c_node->left != NULL)
-                    tree->root = c_node->left;
-                else
-                    tree->root = c_node->right;
+                 if(c_node->left != NULL)                           //자식노드가 왼쪽이면
+                    tree->root = c_node->left;                      //삭제하려는 노드의 왼쪽 자식이 root가 된다.
+                else                                                //자식노드가 오른쪽이면
+                    tree->root = c_node->right;                     //삭제하려는 노드의 오른쪽 자식이 root가 된다.
 
             }
-            else if(rl==1){
+            else if(lr==1){
                 if(c_node->left != NULL)
                     parent->right = c_node->left;
                 else
@@ -275,15 +275,15 @@ int lab2_node_remove(lab2_tree *tree, int key) {
 
 int lab2_node_remove_fg(lab2_tree *tree, int key) {
     lab2_node *c_node, *parent;
-    int rl=0;
+    int lr=0;
     start:
-    if(tree == NULL){                                                //tree is invalid
+    if(tree == NULL){
         return -1;
     }
-    else if(tree->root == NULL){                                     //tree has no node
+    else if(tree->root == NULL){
         return -1;
     }
-    else if(tree->root->left == NULL && tree->root->right == NULL){ //tree has only one node
+    else if(tree->root->left == NULL && tree->root->right == NULL){
         if(key == tree->root->key){
             c_node = tree->root;
             if(pthread_mutex_lock(&(c_node->mutex))!=0){
@@ -295,7 +295,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
             return -1;
         }
     }
-    else{                                                           //tree has more than one node
+    else{                                                          
         c_node = tree->root; parent = tree->root;
         while(c_node != NULL){
             if(pthread_mutex_lock(&(c_node->mutex))!=0){
@@ -309,15 +309,15 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
             else if(c_node->key > key){
                 parent = c_node;
                 c_node = c_node->left;
-                rl=0;
+                lr=0;
             }
             else{
                 parent = c_node;
                 c_node = c_node->right;
-                rl=1;
+                lr=1;
             }
         }
-        if(c_node == NULL){                                         //node has not been found
+        if(c_node == NULL){
             return -1;
         }
         else{
@@ -325,16 +325,16 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
                 goto start;
             }
         }
-        if(c_node->left == NULL && c_node->right == NULL){   //c_node has no child
-            if(rl==0)
+        if(c_node->left == NULL && c_node->right == NULL){
+            if(lr==0)
                 parent->left = NULL;
             else
                 parent->right = NULL;
             pthread_mutex_unlock(&(c_node->mutex));
         }
-        else if(c_node->left != NULL && c_node->right !=NULL){    //c_node has 2 children
+        else if(c_node->left != NULL && c_node->right !=NULL){
              lab2_node *replace = c_node->left, *r_parent = c_node;
-             while(replace->right != NULL){                         //find biggest node in left sub-tree of c_node
+             while(replace->right != NULL){
                  if(pthread_mutex_lock(&(replace->mutex))!=0){
                      pthread_mutex_unlock(&(c_node->mutex));
                      goto start;
@@ -344,12 +344,12 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
                  r_parent = replace;
                  replace = replace->right;
              }
-             if(replace == c_node->left){                               //replace node is left child
+             if(replace == c_node->left){
                  if(c_node == tree->root){
                     replace->right = c_node->right;
                     tree->root = replace;
                  }
-                 else if(rl==0){
+                 else if(lr==0){
                     replace->right = c_node->right;
                     parent->left = replace;
                  }
@@ -359,21 +359,21 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
 
                 }
              }
-             else{                                                  //replace node is not left child
+             else{
                 r_parent->right = replace->left;
                 replace->left = c_node->left;
                 replace->right = c_node->right;
-                if(c_node == tree-> root){                         //c_node is root node
+                if(c_node == tree-> root){
                     tree->root = replace;
                 }
-                else if(rl==0)
+                else if(lr==0)
                     parent->left = replace;
                 else
                     parent->right = replace;
              }
              pthread_mutex_unlock(&(c_node->mutex));
         }
-        else{                                                       //c_node has 1 child
+        else{
             if(c_node == tree->root){
                  if(c_node->left != NULL)
                     tree->root = c_node->left;
@@ -381,7 +381,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
                     tree->root = c_node->right;
 
             }
-            else if(rl==1){
+            else if(lr==1){
                 if(c_node->left != NULL)
                     parent->right = c_node->left;
                 else
@@ -402,16 +402,16 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
     pthread_mutex_lock(&cg_remove);
     lab2_node *c_node, *parent;
-    int rl=0;
-    if(tree == NULL){                                                //tree is invalid
+    int lr=0;
+    if(tree == NULL){
         pthread_mutex_unlock(&cg_remove);
         return -1;
     }
-    else if(tree->root == NULL){                                     //tree has no node
+    else if(tree->root == NULL){
         pthread_mutex_unlock(&cg_remove);
         return -1;
     }
-    else if(tree->root->left == NULL && tree->root->right == NULL){ //tree has only one node
+    else if(tree->root->left == NULL && tree->root->right == NULL){
         if(key == tree->root->key){
             c_node = tree->root;
             tree->root = NULL;
@@ -421,7 +421,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
             return -1;
         }
     }
-    else{                                                           //tree has more than one node
+    else{
         c_node = tree->root; parent = tree->root;
         while(c_node != NULL){
             if(c_node->key == key)
@@ -429,36 +429,36 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
             else if(c_node->key > key){
                 parent = c_node;
                 c_node = c_node->left;
-                rl=0;
+                lr=0;
             }
             else{
                 parent = c_node;
                 c_node = c_node->right;
-                rl=1;
+                lr=1;
             }
         }
-        if(c_node == NULL){                                         //node has not been found
+        if(c_node == NULL){
             pthread_mutex_unlock(&cg_remove);
             return -1;
         }
-        else if(c_node->left == NULL && c_node->right == NULL){   //c_node has no child
-            if(rl==0)
+        else if(c_node->left == NULL && c_node->right == NULL){
+            if(lr==0)
                 parent->left = NULL;
             else
                 parent->right = NULL;
         }
-        else if(c_node->left != NULL && c_node->right !=NULL){    //c_node has 2 children
+        else if(c_node->left != NULL && c_node->right !=NULL){
              lab2_node *replace = c_node->left, *r_parent = c_node;
-             while(replace->right != NULL){                         //find biggest node in left sub-tree of c_node
+             while(replace->right != NULL){
                  r_parent = replace;
                  replace = replace->right;
              }
-             if(replace == c_node->left){                               //replace node is left child
+             if(replace == c_node->left){
                  if(c_node == tree->root){
                     replace->right = c_node->right;
                     tree->root = replace;
                  }
-                 else if(rl==0){
+                 else if(lr==0){
                     replace->right = c_node->right;
                     parent->left = replace;
                  }
@@ -468,20 +468,20 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
 
                 }
              }
-             else{                                                  //replace node is not left child
+             else{
                 r_parent->right = replace->left;
                 replace->left = c_node->left;
                 replace->right = c_node->right;
-                if(c_node == tree-> root){                         //c_node is root node
+                if(c_node == tree-> root){
                     tree->root = replace;
                 }
-                else if(rl==0)
+                else if(lr==0)
                     parent->left = replace;
                 else
                     parent->right = replace;
              }
         }
-        else{                                                       //c_node has 1 child
+        else{
             if(c_node == tree->root){
                  if(c_node->left != NULL)
                     tree->root = c_node->left;
@@ -489,7 +489,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
                     tree->root = c_node->right;
 
             }
-            else if(rl==1){
+            else if(lr==1){
                 if(c_node->left != NULL)
                     parent->right = c_node->left;
                 else
@@ -507,7 +507,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
     return 0;
 }
 
-void lab2_tree_delete(lab2_tree *tree) {                            //free every node in tree and itself
+void lab2_tree_delete(lab2_tree *tree) {
     if(tree == NULL)
         return;
     else{
@@ -516,7 +516,7 @@ void lab2_tree_delete(lab2_tree *tree) {                            //free every
     }
 }
 
-void lab2_node_delete(lab2_node *node) {                            //travel from root to every node to delete them
+void lab2_node_delete(lab2_node *node) {
     if(node != NULL){                   
         lab2_node_delete(node->left);
         lab2_node_delete(node->right);
